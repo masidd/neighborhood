@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type='text/javascript' src='js/knockout-3.4.0.js'></script>
+  <script src="js/jquery.min.js"></script>
+  <title></title>
+    <style>
+      html,
+      body {
+      }
+
+      .row{
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content:space-between;
+        position: absolute;
+        height:100%;
+
+      }
+      .top-row{
+        background: deeppink;
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content:space-between;
+        align-items:center;
+
+      }
+
+      .hamburger-menu{
+        width:2%;
+      }
+
+      .container{
+        /*position: relative;*/
+      }
+
+      .nav-panel{
+        z-index: 1;
+        width: 300px;
+        position: absolute;
+
+        width:300px;
+        height:100%;
+        background-color: white;
+        opacity:.8;
+
+        -webkit-transform: translate(-300px, 0);
+        transform: translate(-300px, 0);
+        transition: transform 0.3s ease;
+
+      }
+
+      .open{
+         -webkit-transform: translate(0, 0);
+         transform: translate(0, 0);
+      }
+      .movemap{
+        /*margin-left:300px;*/
+      }
+      .location-list{
+        margin-bottom: 15px;
+      }
+
+      #map {
+        bottom:0px;
+        height: 100%;
+        position:absolute;
+        right: 0px;
+        width:100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-bind= "css:{movemap: isOpen}" class="container">
+      <header class="top-row">
+        <div data-bind="click: toggle" class="hamburger-menu">
+          <a>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M2 6h20v3H2zm0 5h20v3H2zm0 5h20v3H2z"/> </path>
+          </svg>
+        </a>
+        </div>
+        </header>
+        <div class="row">
+        <div data-bind="css: {open: isOpen}" class="nav-panel">
+          <nav>
+           <ul data-bind="foreach: locations">
+             <li data-bind="text: title" class="location-list"><hr></li>
+            </ul>
+          </nav>
+        </div>
+        <div data-bind="click: close" id="map"></div>
+        </div>
+    </div>
+
+    <script>
+
+     vm = {
+      isOpen: ko.observable(false),
+      toggle: function() {
+        console.log("before:" + vm.isOpen());
+        vm.isOpen(!vm.isOpen());
+        console.log("after:" + vm.isOpen());
+      },
+      close: function() {
+        vm.isOpen(false);
+      },
+      locations : ko.observableArray( [
+          {title: 'Caleb Smith State Park Preserve, 581 West Jericho Turnpike, Smithtown, NY 11787', location: {lat: 40.848614, lng: -73.230747}, marker:null},
+          {title: 'Theodore Roosevelt Nature Center at Jones Beach State Park, Jones Beach State Parks, Hempstead, NY 11793', location: {lat: 40.588192, lng: -73.546417}, marker:null},
+          {title: 'WaterFront Center, 1 West End Ave, Oyster Bay, NY 11771', location: {lat: 40.875699, lng: -73.539744}, marker:null},
+          {title: 'Wertheim National Wildlife Refuge, New York, USA', location: {lat: 40.787021, lng: -72.8929}, marker:null},
+          {title: 'Sands Point Preserve, 127 Middle Neck Rd, Sands Point, NY 11050', location: {lat: 40.85595, lng: -73.70053}, marker:null},
+          {title: 'Massapequa Preserve, North Massapequa, NY 11758', location: {lat: 40.694075, lng: -73.456573}, marker:null}
+        ])
+    };
+
+    ko.applyBindings(vm);
+
+    var map;
+    var markers = [];
+    var largeInfowindow;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 40.768433, lng: -73.525125},
+        zoom: 10
+      });
+      largeInfowindow = new google.maps.InfoWindow();
+      var bounds = new google.maps.LatLngBounds();
+      // Style the markers a bit. This will be our listing marker icon.
+      var defaultIcon = makeMarkerIcon('0091ff');
+
+      // Create a "highlighted location" marker color for when the user
+      // mouses over the marker.
+      var highlightedIcon = makeMarkerIcon('FFFF24');
+      // The following group uses the location array to create an array of markers on initialize.
+      for (var i = 0; i < vm.locations().length; i++) {
+          // Get the position from the location array.
+          var position = vm.locations()[i].location;
+          var title = vm.locations()[i].title;
+          // Create a marker per location, and put into markers array.
+          var marker = new google.maps.Marker({
+            map: map,
+            position: position,
+            title: title,
+            animation: google.maps.Animation.DROP,
+            icon: defaultIcon,
+            id: i
+          });
+          vm.locations()[i].marker = marker;
+
+          // Push the marker to our array of markers.
+         //****do i really need this? markers.push(marker);
+          // Create an onclick event to open an infowindow at each marker.
+          marker.addListener('click', function() {
+            populateInfoWindow(this, largeInfowindow);
+          });
+
+          marker.addListener('mouseover', function() {
+            this.setIcon(highlightedIcon);
+          });
+          marker.addListener('mouseout', function() {
+            this.setIcon(defaultIcon);
+          });
+
+       //*** is this needed? bounds.extend(markers[i].position);
+          bounds.extend(marker.position);
+        }
+        // Extend the boundaries of the map for each marker
+        map.fitBounds(bounds);
+    }
+
+     function populateInfoWindow(marker, infowindow) {
+        // Check to make sure the infowindow is not already opened on this marker.
+        if (infowindow.marker != marker) {
+          infowindow.marker = marker;
+          var wikiUrl = getWikiUrl(marker.title);
+          $.ajax( {
+            url: wikiUrl,
+            dataType: 'jsonp',
+          } ).success(function(data) {
+          var wikiInfo = {
+            summary : data[2],
+            url : data[3]
+          };
+          infowindow.setContent('<div>' + marker.title + '</div><div>' + wikiInfo.summary + '</div><div><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a></div>');
+          infowindow.open(map, marker);
+          // Make sure the marker property is cleared if the infowindow is closed.
+          infowindow.addListener('closeclick',function(){
+            infowindow.marker = null;
+          });
+        });
+      }
+    }
+
+   function getWikiUrl(loc){
+      var locationName = loc.split(",")[0];
+      remoteUrlWithOrigin = "https://en.wikipedia.org/w/api.php?action=opensearch&search="+locationName+"&limit=1&redirects=resolve&namespace=0&format=json";
+
+      console.log("jsonURL = " + remoteUrlWithOrigin);
+      return remoteUrlWithOrigin;
+    }
+
+      function makeMarkerIcon(markerColor) {
+        var markerImage = new google.maps.MarkerImage(
+          'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
+          '|40|_|%E2%80%A2',
+          new google.maps.Size(21, 34),
+          new google.maps.Point(0, 0),
+          new google.maps.Point(10, 34),
+          new google.maps.Size(21,34));
+        return markerImage;
+      }
+
+    </script>
+
+    <script async defer
+        src=
+        "https://maps.googleapis.com/maps/api/js?libraries=geometry,drawing&key=AIzaSyAHnHf6UwnpXNAOL5Ye7HDCkuLel3cdky4&v=3&callback=initMap">
+    </script>
+  </body>
+</html>
