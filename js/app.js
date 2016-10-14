@@ -3,14 +3,11 @@
      var vm = function() {
       var self=this;
 
-      console.log("hi");
+
       this.isOpen = ko.observable(false);
-      console.log(this.isOpen());
 
       this.toggle = function() {
-        console.log("before:" + this.isOpen());
         this.isOpen(!this.isOpen());
-        console.log("after:" + this.isOpen());
       };
 
       this.close = function() {
@@ -25,18 +22,18 @@
           {title: 'Caleb Smith State Park Preserve, 581 West Jericho Turnpike, Smithtown, NY 11787', location: {lat: 40.848614, lng: -73.230747}, marker:null},
           {title: 'Theodore Roosevelt Nature Center at Jones Beach State Park, Jones Beach State Parks, Hempstead, NY 11793', location: {lat: 40.588192, lng: -73.546417}, marker:null},
           {title: 'WaterFront Center, 1 West End Ave, Oyster Bay, NY 11771', location: {lat: 40.875699, lng: -73.539744}, marker:null},
-          {title: 'Wertheim National Wildlife Refuge, New York, USA', location: {lat: 40.787021, lng: -72.8929}, marker:null},
+          {title: 'Wertheim National Wildlife Refuge, 340 Smith Rd, Shirley, NY 11967', location: {lat: 40.787021, lng: -72.8929}, marker:null},
           {title: 'Sands Point Preserve, 127 Middle Neck Rd, Sands Point, NY 11050', location: {lat: 40.85595, lng: -73.70053}, marker:null},
-          {title: 'Massapequa Preserve, North Massapequa, NY 11758', location: {lat: 40.694075, lng: -73.456573}, marker:null}
+          {title: 'Massapequa Preserve, N. Richmond Ave, North Massapequa, NY 11758', location: {lat: 40.694075, lng: -73.456573}, marker:null}
         ]);
 
       self.populateInfoWindow = function(marker, infowindow) {
         // Check to make sure the infowindow is not already opened on this marker.
         if (infowindow.marker != marker) {
           infowindow.marker = marker;
-          var wikiUrl = getWikiUrl(marker.title);
-          var googleUrl = 'https://www.googleapis.com/customsearch/v1?key=AIzaSyAHnHf6UwnpXNAOL5Ye7HDCkuLel3cdky4&cx=010463991830776209284:o1tbqluxrtw&q=' + marker.title + '&searchType=image&fileType=jpg&imgSize=small&alt=json';
-          console.log(googleUrl);
+          var address = getSearchTerms(marker.title);
+          var wikiUrl = "https://en.wikipedia.org/w/api.php?action=opensearch&search="+address.wikiSrcTxt+"&limit=1&redirects=resolve&namespace=0&format=json"
+          var flickrUrl = 'https://api.flickr.com/services/rest/?method=flickr.photos.search&sort=relevance&api_key=dc67acf839a879ed25b6a5fd29db7741&text='+address.flickrSrcTxt+'&format=json&safe_search=1&per_page=20';
           $.ajax( {
             url: wikiUrl,
             dataType: 'jsonp',
@@ -47,16 +44,25 @@
           };
 
           $.ajax({
-            url: googleUrl,
+            url: flickrUrl,
             dataType: 'jsonp',
-          }).success(function(data){
-            console.log(data.items[0].link);
-            infowindow.setContent('<div>' + marker.title + '</div><div>' + wikiInfo.summary + '</div><div><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a><img src="' + data.items[1].link + '"</img></div>');
+            jsonp: 'jsoncallback',
+          }).then(function(data, status, xhr) {
+            var image = "";
+            //error handling : create image URL only if there are any Flickr search results
+            if(data.photos.photo[0]){
+              var photo = data.photos.photo[0];
+              image = 'https://farm' + photo.farm +'.staticflickr.com/'+ photo.server +'/'+ photo.id+'_'+ photo.secret+'_t.jpg';
+            }
+            infowindow.setContent('<div>' + marker.title + '</div><div>' + wikiInfo.summary + '</div><div><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a></div><div><img src="' + image + '"</img></div>');
             infowindow.open(map, marker);
             // Make sure the marker property is cleared if the infowindow is closed.
             infowindow.addListener('closeclick',function(){
             infowindow.marker = null;
           });
+        },
+        function(xhr, status, error) {
+           console.log('failed (promises): ' + error);
         });
         });
       }
@@ -123,12 +129,19 @@
     }
 
 
-   function getWikiUrl(loc){
-      var locationName = loc.split(",")[0];
-      remoteUrlWithOrigin = "https://en.wikipedia.org/w/api.php?action=opensearch&search="+locationName+"&limit=1&redirects=resolve&namespace=0&format=json";
+   function getSearchTerms(loc){
+      var fullLoc = loc.split(",");
 
-      console.log("jsonURL = " + remoteUrlWithOrigin);
-      return remoteUrlWithOrigin;
+      for (var i = 0; i<fullLoc.length; i++){
+        fullLoc[i] = fullLoc[i].replace(/ /g,"+");
+        fullLoc[i] = fullLoc[i].toLowerCase();
+      }
+      var address = {
+        flickrSrcTxt : fullLoc[0] + fullLoc[2] + '+ny',
+        wikiSrcTxt : fullLoc[0]
+      }
+
+      return address;
     }
 
       function makeMarkerIcon(image) {
