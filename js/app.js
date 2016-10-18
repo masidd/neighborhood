@@ -3,7 +3,6 @@
      var vm = function() {
       var self=this;
 
-
       this.isOpen = ko.observable(false);
 
       this.toggle = function() {
@@ -18,13 +17,17 @@
         self.populateInfoWindow(this.marker,largeInfowindow);
       }
 
+      this.filterResults = function(){
+
+      };
+
       this.locations = ko.observableArray( [
-          {title: 'Caleb Smith State Park Preserve, 581 West Jericho Turnpike, Smithtown, NY 11787', location: {lat: 40.848614, lng: -73.230747}, marker:null},
-          {title: 'Theodore Roosevelt Nature Center at Jones Beach State Park, Jones Beach State Parks, Hempstead, NY 11793', location: {lat: 40.588192, lng: -73.546417}, marker:null},
-          {title: 'WaterFront Center, 1 West End Ave, Oyster Bay, NY 11771', location: {lat: 40.875699, lng: -73.539744}, marker:null},
-          {title: 'Wertheim National Wildlife Refuge, 340 Smith Rd, Shirley, NY 11967', location: {lat: 40.787021, lng: -72.8929}, marker:null},
-          {title: 'Sands Point Preserve, 127 Middle Neck Rd, Sands Point, NY 11050', location: {lat: 40.85595, lng: -73.70053}, marker:null},
-          {title: 'Massapequa Preserve, N. Richmond Ave, North Massapequa, NY 11758', location: {lat: 40.694075, lng: -73.456573}, marker:null}
+          {title: 'Caleb Smith State Park Preserve, 581 West Jericho Turnpike, Smithtown, NY 11787', location: {lat: 40.848614, lng: -73.230747}, county: 'Suffolk', marker:null},
+          {title: 'Theodore Roosevelt Nature Center at Jones Beach State Park, Jones Beach State Parks, Hempstead, NY 11793', location: {lat: 40.588192, lng: -73.546417}, county: 'Nassau', marker:null},
+          {title: 'WaterFront Center, 1 West End Ave, Oyster Bay, NY 11771', location: {lat: 40.875699, lng: -73.539744}, county: 'Nassau', marker:null},
+          {title: 'Wertheim National Wildlife Refuge, 340 Smith Rd, Shirley, NY 11967', location: {lat: 40.787021, lng: -72.8929}, county: 'Suffolk', marker:null},
+          {title: 'Sands Point Preserve, 127 Middle Neck Rd, Sands Point, NY 11050', location: {lat: 40.85595, lng: -73.70053}, county: 'Nassau', marker:null},
+          {title: 'Massapequa Preserve, N. Richmond Ave, North Massapequa, NY 11758', location: {lat: 40.694075, lng: -73.456573}, county: 'Nassau', marker:null}
         ]);
 
       self.populateInfoWindow = function(marker, infowindow) {
@@ -54,7 +57,7 @@
               var photo = data.photos.photo[0];
               image = 'https://farm' + photo.farm +'.staticflickr.com/'+ photo.server +'/'+ photo.id+'_'+ photo.secret+'_t.jpg';
             }
-            infowindow.setContent('<div>' + marker.title + '</div><div>' + wikiInfo.summary + '</div><div><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a></div><div><img src="' + image + '"</img></div>');
+            infowindow.setContent('<div><div>' + marker.title + '</div><div>' + wikiInfo.summary + '</div><div><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a></div><div><img src="' + image + '"</img></div></div>');
             infowindow.open(map, marker);
             // Make sure the marker property is cleared if the infowindow is closed.
             infowindow.addListener('closeclick',function(){
@@ -107,6 +110,7 @@
     var bounds;
     var defaultIcon;
     var highlightedIcon;
+    var center;
 
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), {
@@ -123,11 +127,14 @@
       // mouses over the marker.
       highlightedIcon = makeMarkerIcon('http://www.clipartkid.com/images/2/download-png-image-maple-png-leaf-fWWFLD-clipart.png');
       // The following group uses the location array to create an array of markers on initialize.
+      google.maps.event.addDomListener(window, 'resize',function(){
+        map.setCenter(map.center);
+        map.fitBounds(bounds);
+      });
 
       ko.applyBindings(new vm());
 
     }
-
 
    function getSearchTerms(loc){
       var fullLoc = loc.split(",");
