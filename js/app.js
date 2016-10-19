@@ -17,7 +17,21 @@
         self.populateInfoWindow(this.marker,largeInfowindow);
       }
 
-      this.filterResults = function(){
+      this.suffolk = ko.observable(true);
+      this.nassau = ko.observable(true);
+
+      self.filterResults = function(){
+      /*  for (var i = 0; i<self.locations.length; i++){
+          if (self.location[i].county == 'Suffolk'){
+            if (!self.suffolk){
+              self.visible = false;
+            } else self.visible = true;
+          } /*else {
+            if (!self.nassau){
+              if self.visible = false;
+            } else self.visible = true;
+          }
+        }*/
 
       };
 
