@@ -1,6 +1,38 @@
 
 
-     var vm = function() {
+    var map;
+    var markers = [];
+    var largeInfowindow;
+    var bounds;
+    var defaultIcon;
+    var highlightedIcon;
+    var center;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 40.768433, lng: -73.525125},
+        zoom: 10
+      });
+
+      largeInfowindow = new google.maps.InfoWindow();
+      bounds = new google.maps.LatLngBounds();
+      // Style the markers a bit. This will be our listing marker icon.
+      defaultIcon = makeMarkerIcon('http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|6107F5|40|_|%E2%80%A2');
+
+      // Create a "highlighted location" marker color for when the user
+      // mouses over the marker.
+      highlightedIcon = makeMarkerIcon('http://www.clipartkid.com/images/2/download-png-image-maple-png-leaf-fWWFLD-clipart.png');
+      // The following group uses the location array to create an array of markers on initialize.
+      google.maps.event.addDomListener(window, 'resize',function(){
+        map.setCenter(map.center);
+        map.fitBounds(bounds);
+      });
+
+      ko.applyBindings(new vm());
+
+    }
+
+    var vm = function() {
       var self=this;
 
       this.isOpen = ko.observable(false);
@@ -20,21 +52,6 @@
       this.suffolk = ko.observable(true);
       this.nassau = ko.observable(true);
 
-      self.filterResults = function(){
-      /*  for (var i = 0; i<self.locations.length; i++){
-          if (self.location[i].county == 'Suffolk'){
-            if (!self.suffolk){
-              self.visible = false;
-            } else self.visible = true;
-          } /*else {
-            if (!self.nassau){
-              if self.visible = false;
-            } else self.visible = true;
-          }
-        }*/
-
-      };
-
       this.locations = ko.observableArray( [
           {title: 'Caleb Smith State Park Preserve, 581 West Jericho Turnpike, Smithtown, NY 11787', location: {lat: 40.848614, lng: -73.230747}, county: 'Suffolk', marker:null},
           {title: 'Theodore Roosevelt Nature Center at Jones Beach State Park, Jones Beach State Parks, Hempstead, NY 11793', location: {lat: 40.588192, lng: -73.546417}, county: 'Nassau', marker:null},
@@ -43,6 +60,34 @@
           {title: 'Sands Point Preserve, 127 Middle Neck Rd, Sands Point, NY 11050', location: {lat: 40.85595, lng: -73.70053}, county: 'Nassau', marker:null},
           {title: 'Massapequa Preserve, N. Richmond Ave, North Massapequa, NY 11758', location: {lat: 40.694075, lng: -73.456573}, county: 'Nassau', marker:null}
         ]);
+
+      //modified code from article http://www.knockmeout.net/2011/04/utility-functions-in-knockoutjs.html
+      this.filteredLocations = ko.computed(function() {
+        var filter;
+        var filteredArray = [];
+        if (this.nassau() && this.suffolk()) {
+          console.log(this.locations());
+          filteredArray = this.locations();
+        } else if (!this.nassau() || !this.suffolk()){
+          if (!this.nassau()){
+            filter = 'nassau';
+          } else if (!this.suffolk()){
+            filter = 'suffolk';
+          }
+          console.log(this.locations());
+          filteredArray = ko.utils.arrayFilter(this.locations(), function(loc) {
+            return stringStartsWith(loc.county.toLowerCase(), filter);
+          });
+        }
+        return filteredArray;
+      }, this);
+
+      var stringStartsWith = function (string, startsWith) {
+        string = string || "";
+        if (startsWith.length > string.length)
+            return false;
+        return string.substring(0, startsWith.length) === startsWith;
+      };
 
       self.populateInfoWindow = function(marker, infowindow) {
         // Check to make sure the infowindow is not already opened on this marker.
@@ -84,12 +129,14 @@
         });
       }
     };
-       for (var i = 0; i < this.locations().length; i++) {
+
+    for (var i = 0; i < this.filteredLocations().length; i++) {
+        console.log("make markers");
           // Get the position from the location array.
-          var position = this.locations()[i].location;
-          var title = this.locations()[i].title;
+          var position = this.filteredLocations()[i].location;
+          var title = this.filteredLocations()[i].title;
           // Create a marker per location, and put into markers array.
-          var marker = new google.maps.Marker({
+            marker = new google.maps.Marker({
             map: map,
             position: position,
             title: title,
@@ -97,7 +144,7 @@
             icon: defaultIcon,
             id: i
           });
-          this.locations()[i].marker = marker;
+          this.filteredLocations()[i].marker = marker;
 
           marker.addListener('click', function() {
             self.populateInfoWindow(this, largeInfowindow);
@@ -114,41 +161,12 @@
         }
         // Extend the boundaries of the map for each marker
         map.fitBounds(bounds);
+
     };
 
 
 
-    var map;
-    var markers = [];
-    var largeInfowindow;
-    var bounds;
-    var defaultIcon;
-    var highlightedIcon;
-    var center;
 
-    function initMap() {
-      map = new google.maps.Map(document.getElementById('map'), {
-        center: {lat: 40.768433, lng: -73.525125},
-        zoom: 10
-      });
-
-      largeInfowindow = new google.maps.InfoWindow();
-      bounds = new google.maps.LatLngBounds();
-      // Style the markers a bit. This will be our listing marker icon.
-      defaultIcon = makeMarkerIcon('http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|6107F5|40|_|%E2%80%A2');
-
-      // Create a "highlighted location" marker color for when the user
-      // mouses over the marker.
-      highlightedIcon = makeMarkerIcon('http://www.clipartkid.com/images/2/download-png-image-maple-png-leaf-fWWFLD-clipart.png');
-      // The following group uses the location array to create an array of markers on initialize.
-      google.maps.event.addDomListener(window, 'resize',function(){
-        map.setCenter(map.center);
-        map.fitBounds(bounds);
-      });
-
-      ko.applyBindings(new vm());
-
-    }
 
    function getSearchTerms(loc){
       var fullLoc = loc.split(",");
