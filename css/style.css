@@ -25,7 +25,8 @@
       .filter-button{
         margin-left: auto;
         margin-right: auto;
-        display: block;
+      display: block;
+
       }
       .hamburger-menu{
         width:2%;

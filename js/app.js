@@ -45,7 +45,7 @@
         this.isOpen(false);
       };
 
-      self.currentMarker = function(){
+      this.currentMarker = function(){
         self.populateInfoWindow(this.marker,largeInfowindow);
       }
 
@@ -130,11 +130,12 @@
       }
     };
 
-    for (var i = 0; i < this.filteredLocations().length; i++) {
+this.filteredLocations.subscribe(function(){
+  for (var i = 0; i < self.filteredLocations().length; i++) {
         console.log("make markers");
           // Get the position from the location array.
-          var position = this.filteredLocations()[i].location;
-          var title = this.filteredLocations()[i].title;
+          var position = self.filteredLocations()[i].location;
+          var title = self.filteredLocations()[i].title;
           // Create a marker per location, and put into markers array.
             marker = new google.maps.Marker({
             map: map,
@@ -144,7 +145,7 @@
             icon: defaultIcon,
             id: i
           });
-          this.filteredLocations()[i].marker = marker;
+          self.filteredLocations()[i].marker = marker;
 
           marker.addListener('click', function() {
             self.populateInfoWindow(this, largeInfowindow);
@@ -161,9 +162,9 @@
         }
         // Extend the boundaries of the map for each marker
         map.fitBounds(bounds);
+});
 
     };
-
 
 
 
