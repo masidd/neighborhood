@@ -49,6 +49,8 @@
         self.populateInfoWindow(this.marker,largeInfowindow);
       }
 
+      this.filtersVisible = ko.observable(false);
+
       this.suffolk = ko.observable(true);
       this.nassau = ko.observable(true);
 
@@ -68,10 +70,13 @@
         if (this.nassau() && this.suffolk()) {
           console.log(this.locations());
           filteredArray = this.locations();
-        } else if (!this.nassau() || !this.suffolk()){
-          if (!this.nassau()){
+        } else if(!this.nassau() && !this.suffolk()){
+          filteredArray = [];
+        }
+        else if (!this.nassau() || !this.suffolk()){
+          if (this.nassau()){
             filter = 'nassau';
-          } else if (!this.suffolk()){
+          } else if (this.suffolk()){
             filter = 'suffolk';
           }
           console.log(this.locations());
@@ -79,6 +84,7 @@
             return stringStartsWith(loc.county.toLowerCase(), filter);
           });
         }
+
         return filteredArray;
       }, this);
 
@@ -131,6 +137,13 @@
     };
 
 this.filteredLocations.subscribe(function(){
+  for (var i = 0; i < markers.length; i++){
+    markers[i].setMap(null);
+  }
+  self.createMarkers();
+});
+
+self.createMarkers = function(){
   for (var i = 0; i < self.filteredLocations().length; i++) {
         console.log("make markers");
           // Get the position from the location array.
@@ -145,6 +158,7 @@ this.filteredLocations.subscribe(function(){
             icon: defaultIcon,
             id: i
           });
+          markers.push(marker);
           self.filteredLocations()[i].marker = marker;
 
           marker.addListener('click', function() {
@@ -162,9 +176,10 @@ this.filteredLocations.subscribe(function(){
         }
         // Extend the boundaries of the map for each marker
         map.fitBounds(bounds);
-});
+  }
+  self.createMarkers();
 
-    };
+};
 
 
 

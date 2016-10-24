@@ -22,16 +22,28 @@
 
       }
 
-      .filter-button{
+  /*    .filter-button{
         margin-left: auto;
         margin-right: auto;
-      display: block;
+        display: block;
 
-      }
+      }*/
       .hamburger-menu{
         width:2%;
       }
 
+      ul {
+          list-style-image: url('images/tree.png');
+        }
+      li {
+        position: relative;
+      }
+
+      hr {
+        margin-top:10px;
+        border-color : darkgreen;
+        margin-right: 10px;
+      }
       .container{
         width:100%;
         /*position: relative;*/
@@ -41,7 +53,12 @@
           max-height : 100px;
           width: 100%;
         }
-
+        hr{
+          display:none;
+        }
+        ul{
+          list-style: none;
+        }
         .location-list{
           font-size: .7em;
         }

@@ -24,13 +24,16 @@
         </header>
         <div class="row">
         <div data-bind="css: {open: isOpen}" class="nav-panel">
-          <button type="button" class='filter-button'>Show Filters</button>
-          <input type="checkbox" data-bind = "checked: suffolk">Suffolk County</>
-          <input type="checkbox" data-bind = "checked: nassau">Nassau</>
+          <input type="checkbox" data-bind = "checked: filtersVisible">Show Filters</input>
+        <div data-bind = "visible: filtersVisible">
+          <input id = "filters" type="checkbox" data-bind = "checked: suffolk">Suffolk County</>
+          <input id = "filters" type="checkbox" data-bind = "checked: nassau">Nassau County</>
+        </div>
           <nav>
            <ul data-bind="foreach: filteredLocations" class="location-list">
-            <!-- -->
-             <li data-bind="text: title.split(',')[0], click:$parent.currentMarker" ><hr></li>
+
+             <li data-bind="text: title.split(',')[0], click:$parent.currentMarker" ></li>
+             <hr>
             </ul>
           </nav>
 
