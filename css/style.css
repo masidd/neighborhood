@@ -9,7 +9,7 @@
         flex-wrap: wrap;
         justify-content:space-between;
         position: absolute;
-        height:100%;
+        height:95%;
 
       }
       .top-row{
@@ -17,19 +17,18 @@
         width: 100%;
         display: flex;
         flex-wrap: wrap;
-        justify-content:space-between;
         align-items:center;
 
       }
 
-  /*    .filter-button{
-        margin-left: auto;
-        margin-right: auto;
-        display: block;
-
-      }*/
       .hamburger-menu{
-        width:2%;
+        width:30px;
+      }
+
+      h3{
+        font-size:1em;
+        width:90%;
+        margin:5px;
       }
 
       ul {
@@ -46,11 +45,11 @@
       }
       .container{
         width:100%;
-        /*position: relative;*/
       }
+
       @media screen and (max-width: 549px){
         .nav-panel, .location-list{
-          max-height : 100px;
+          max-height : 150px;
           width: 100%;
         }
         hr{
@@ -64,6 +63,15 @@
         }
       }
 
+      @media screen and (min-width: 550px){
+        .nav-panel{
+          width: 20%;
+        }
+        .location-list{
+          font-size: 1em;
+        }
+      }
+
       .nav-panel{
         z-index: 1;
         /*width: 300px;*/
@@ -74,16 +82,6 @@
         -webkit-transform: translate(-100%, 0);
         transform: translate(-100%, 0);
         transition: transform 0.3s ease;
-
-
-      }
-      @media screen and (min-width: 550px){
-        .nav-panel{
-          width: 20%;
-        }
-        .location-list{
-          font-size: 1em;
-        }
       }
 
       .open{
@@ -91,8 +89,9 @@
          transform: translate(0, 0);
       }
       .movemap{
-        /*margin-left:300px;*/
+
       }
+
       .location-list{
         margin-bottom: 15px;
       }

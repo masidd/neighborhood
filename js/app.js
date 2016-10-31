@@ -11,8 +11,10 @@
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), {
         center: {lat: 40.768433, lng: -73.525125},
-        zoom: 10
+        zoom: 9
       });
+
+
 
       largeInfowindow = new google.maps.InfoWindow();
       bounds = new google.maps.LatLngBounds();
@@ -25,8 +27,21 @@
       // The following group uses the location array to create an array of markers on initialize.
       google.maps.event.addDomListener(window, 'resize',function(){
         map.setCenter(map.center);
-        map.fitBounds(bounds);
+        if (map.getZoom() > 9){
+          map.fitBounds(bounds);
+        }
       });
+
+
+   /*   google.maps.event.addListener(map, 'bounds_changed', function(event) {
+        if (this.getZoom() > 9) {
+          this.setZoom(9);
+          console.log(map.getZoom());
+        }
+      });*/
+
+
+// Maps api asynchronous load code here.
 
       ko.applyBindings(new vm());
 
@@ -68,7 +83,6 @@
         var filter;
         var filteredArray = [];
         if (this.nassau() && this.suffolk()) {
-          console.log(this.locations());
           filteredArray = this.locations();
         } else if(!this.nassau() && !this.suffolk()){
           filteredArray = [];
@@ -79,12 +93,10 @@
           } else if (this.suffolk()){
             filter = 'suffolk';
           }
-          console.log(this.locations());
           filteredArray = ko.utils.arrayFilter(this.locations(), function(loc) {
             return stringStartsWith(loc.county.toLowerCase(), filter);
           });
         }
-
         return filteredArray;
       }, this);
 
@@ -126,8 +138,10 @@
             infowindow.open(map, marker);
             // Make sure the marker property is cleared if the infowindow is closed.
             infowindow.addListener('closeclick',function(){
-            infowindow.marker = null;
-          });
+              infowindow.marker = null;
+              map.setCenter(map.center);
+              map.fitBounds(bounds);
+            });
         },
         function(xhr, status, error) {
            console.log('failed (promises): ' + error);
@@ -145,7 +159,6 @@ this.filteredLocations.subscribe(function(){
 
 self.createMarkers = function(){
   for (var i = 0; i < self.filteredLocations().length; i++) {
-        console.log("make markers");
           // Get the position from the location array.
           var position = self.filteredLocations()[i].location;
           var title = self.filteredLocations()[i].title;
@@ -175,14 +188,13 @@ self.createMarkers = function(){
           bounds.extend(marker.position);
         }
         // Extend the boundaries of the map for each marker
-        map.fitBounds(bounds);
+        if (map.getZoom() > 9){
+          map.fitBounds(bounds);
+        }
   }
   self.createMarkers();
 
 };
-
-
-
 
    function getSearchTerms(loc){
       var fullLoc = loc.split(",");

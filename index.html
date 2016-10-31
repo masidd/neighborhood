@@ -12,7 +12,7 @@
 
   </head>
   <body>
-    <div data-bind= "css:{movemap: isOpen}" class="container">
+    <div class="container">
       <header class="top-row">
         <div data-bind="click: toggle" class="hamburger-menu">
           <a>
@@ -21,6 +21,7 @@
           </svg>
         </a>
         </div>
+        <h3>Nature Centers in Long Island</h3>
         </header>
         <div class="row">
         <div data-bind="css: {open: isOpen}" class="nav-panel">
@@ -38,7 +39,9 @@
           </nav>
 
         </div>
-        <div data-bind="click: close" id="map"></div>
+        <div data-bind = "css:{movemap:isOpen}">
+          <div data-bind="click: close" id="map"></div>
+        </div>
         </div>
     </div>
 
