@@ -32,16 +32,7 @@
         }
       });
 
-
-   /*   google.maps.event.addListener(map, 'bounds_changed', function(event) {
-        if (this.getZoom() > 9) {
-          this.setZoom(9);
-          console.log(map.getZoom());
-        }
-      });*/
-
-
-// Maps api asynchronous load code here.
+      // Maps api asynchronous load code here.
 
       ko.applyBindings(new vm());
 
@@ -58,6 +49,7 @@
 
       this.close = function() {
         this.isOpen(false);
+        return true;
       };
 
       this.currentMarker = function(){
@@ -134,7 +126,7 @@
               var photo = data.photos.photo[0];
               image = 'https://farm' + photo.farm +'.staticflickr.com/'+ photo.server +'/'+ photo.id+'_'+ photo.secret+'_t.jpg';
             }
-            infowindow.setContent('<div><div>' + marker.title + '</div><div>' + wikiInfo.summary + '</div><div><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a></div><div><img src="' + image + '"</img></div></div>');
+            infowindow.setContent('<div><p>' + marker.title + '</p><p>' + wikiInfo.summary + '</p><p><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a></p><p><img src="' + image + '"</img></p></div>');
             infowindow.open(map, marker);
             // Make sure the marker property is cleared if the infowindow is closed.
             infowindow.addListener('closeclick',function(){
@@ -142,6 +134,12 @@
               map.setCenter(map.center);
               map.fitBounds(bounds);
             });
+
+            google.maps.event.addDomListener(map, 'click', function() {
+              infowindow.marker = null;
+              infowindow.close();
+            });
+
         },
         function(xhr, status, error) {
            console.log('failed (promises): ' + error);
