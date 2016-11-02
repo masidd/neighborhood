@@ -126,7 +126,8 @@
               var photo = data.photos.photo[0];
               image = 'https://farm' + photo.farm +'.staticflickr.com/'+ photo.server +'/'+ photo.id+'_'+ photo.secret+'_t.jpg';
             }
-            infowindow.setContent('<div><p>' + marker.title + '</p><p>' + wikiInfo.summary + '</p><p><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a></p><p><img src="' + image + '"</img></p></div>');
+            infowindow.setContent('<div class = "info-window"><p class = "iw-img"><img src="' + image + '"</img><h4>' + marker.title + '</h4><p>' + wikiInfo.summary + '</p><p><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a></p></p></div>');
+            //'<div class = "info-window"><p>' + marker.title + '</p><p>' + wikiInfo.summary + '</p><p><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a></p><p><img src="' + image + '"</img></p></div>'
             infowindow.open(map, marker);
             // Make sure the marker property is cleared if the infowindow is closed.
             infowindow.addListener('closeclick',function(){

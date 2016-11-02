@@ -27,7 +27,7 @@
 
       h3{
         font-size:1em;
-        width:90%;
+        width:80%;
         margin:5px;
       }
 
@@ -47,6 +47,13 @@
         width:100%;
       }
 
+      .iw-img{
+        display:flex;
+      }
+      .iw-info{
+        flex:wrap;
+      }
+
       @media screen and (max-width: 549px){
         .nav-panel, .location-list{
           max-height : 140px;
@@ -60,6 +67,9 @@
         }
         .location-list{
           font-size: .7em;
+        }
+        .info-window{
+          font-size:8px;
         }
       }
 
