@@ -16,31 +16,31 @@
       <header class="top-row">
         <div data-bind="click: toggle" class="hamburger-menu">
           <a>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M2 6h20v3H2zm0 5h20v3H2zm0 5h20v3H2z"/> </path>
-          </svg>
-        </a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M2 6h20v3H2zm0 5h20v3H2zm0 5h20v3H2z"/> </path>
+            </svg>
+          </a>
         </div>
         <h3>Nature Centers in Long Island</h3>
-        </header>
-        <div class="row">
-        <div data-bind="css: {open: isOpen}" class="nav-panel">
+      </header>
+      <div class="row panel" >
+        <div class="nav-panel" data-bind="css: {opennav: isOpen}">
           <input type="checkbox" data-bind = "checked: filtersVisible">Show Filters</input>
-        <div data-bind = "visible: filtersVisible">
-          <input id = "filters" type="checkbox" data-bind = "checked: suffolk">Suffolk County</>
-          <input id = "filters" type="checkbox" data-bind = "checked: nassau">Nassau County</>
-        </div>
+          <div data-bind = "visible: filtersVisible">
+            <input id = "filters" type="checkbox" data-bind = "checked: suffolk">Suffolk County</>
+            <input id = "filters" type="checkbox" data-bind = "checked: nassau">Nassau County</>
+          </div>
           <nav>
            <ul data-bind="foreach: filteredLocations" class="location-list">
-
              <li data-bind="text: title.split(',')[0], click:$parent.currentMarker" ></li>
              <hr>
             </ul>
           </nav>
-
         </div>
-        <div data-bind = "css:{movemap:isOpen}">
-          <div data-bind="click: close" id="map"></div>
+        <div>
+
+          <div data-bind="click: close, style: { width: isOpen() ? '80%' : '100%' }" id="map"></div>
+
         </div>
         </div>
     </div>

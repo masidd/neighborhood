@@ -45,12 +45,26 @@
 
       this.toggle = function() {
         this.isOpen(!this.isOpen());
+        console.log(this.isOpen());
       };
 
       this.close = function() {
         this.isOpen(false);
         return true;
       };
+
+      this.zoomLevel = ko.observable('9');
+
+      this.zoomLevel.subscribe(function(){
+        if ($(window).width() < 549){
+          var zoom = 8;
+        }
+        else{
+          zoom = 9;
+        }
+        return zoom;
+      });
+
 
       this.currentMarker = function(){
         self.populateInfoWindow(this.marker,largeInfowindow);
