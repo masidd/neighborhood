@@ -14,8 +14,6 @@
         zoom: 9
       });
 
-
-
       largeInfowindow = new google.maps.InfoWindow();
       bounds = new google.maps.LatLngBounds();
       // Style the markers a bit. This will be our listing marker icon.
@@ -100,6 +98,7 @@
       };
 
       self.populateInfoWindow = function(marker, infowindow) {
+        map.fitBounds(bounds);
         // Check to make sure the infowindow is not already opened on this marker.
         if (infowindow.marker != marker) {
           infowindow.marker = marker;
@@ -139,7 +138,12 @@
             google.maps.event.addDomListener(map, 'click', function() {
               infowindow.marker = null;
               infowindow.close();
+              map.fitBounds(bounds);
             });
+            if ((self.isOpen) && ($(window).width() < 550)){
+              console.log("hello");
+              map.panBy(0,-140);
+            }
 
         },
         function(xhr, status, error) {
@@ -187,9 +191,8 @@ self.createMarkers = function(){
           bounds.extend(marker.position);
         }
         // Extend the boundaries of the map for each marker
-        if (map.getZoom() > 9){
-          map.fitBounds(bounds);
-        }
+        map.fitBounds(bounds);
+
   }
   self.createMarkers();
 
