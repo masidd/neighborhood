@@ -105,6 +105,12 @@
           var address = getSearchTerms(marker.title);
           var wikiUrl = "https://en.wikipedia.org/w/api.php?action=opensearch&search="+address.wikiSrcTxt+"&limit=1&redirects=resolve&namespace=0&format=json"
           var flickrUrl = 'https://api.flickr.com/services/rest/?method=flickr.photos.search&sort=relevance&api_key=dc67acf839a879ed25b6a5fd29db7741&text='+address.flickrSrcTxt+'&format=json&safe_search=1&per_page=20';
+
+          self.apiTimeout = setTimeout(function() {
+            alert('ERROR: Failed to load data');
+            console.log("error");
+          }, 5000);
+
           $.ajax( {
             url: wikiUrl,
             dataType: 'jsonp',
@@ -113,20 +119,18 @@
             summary : data[2],
             url : data[3]
           };
-
+          clearTimeout(self.apiTimeout);
           $.ajax({
             url: flickrUrl,
             dataType: 'jsonp',
             jsonp: 'jsoncallback',
           }).then(function(data, status, xhr) {
             var image = "";
-            //error handling : create image URL only if there are any Flickr search results
             if(data.photos.photo[0]){
               var photo = data.photos.photo[0];
               image = 'https://farm' + photo.farm +'.staticflickr.com/'+ photo.server +'/'+ photo.id+'_'+ photo.secret+'_t.jpg';
             }
             infowindow.setContent('<div class = "info-window"><p class = "iw-img"><img src="' + image + '"</img><h4>' + marker.title + '</h4><p>' + wikiInfo.summary + '</p><p><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a></p></p></div>');
-            //'<div class = "info-window"><p>' + marker.title + '</p><p>' + wikiInfo.summary + '</p><p><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a></p><p><img src="' + image + '"</img></p></div>'
             infowindow.open(map, marker);
             // Make sure the marker property is cleared if the infowindow is closed.
             infowindow.addListener('closeclick',function(){
@@ -222,3 +226,8 @@ self.createMarkers = function(){
           new google.maps.Size(21,34));
         return markerImage;
       }
+
+function googleError(){
+  console.log("no map");
+  alert("Hello! I am an alert box!!");
+}
