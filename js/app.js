@@ -108,53 +108,61 @@
 
           self.apiTimeout = setTimeout(function() {
             alert('ERROR: Failed to load data');
-            console.log("error");
           }, 5000);
 
           $.ajax( {
             url: wikiUrl,
             dataType: 'jsonp',
           } ).success(function(data) {
-          var wikiInfo = {
-            summary : data[2],
-            url : data[3]
-          };
+            var wiki;
+            if (data[2].length!=0){
+              var wikiInfo = {
+                summary : data[2],
+                url : data[3]
+              };
+              var wiki = '<p>' + wikiInfo.summary + '</p><p><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a></p>';
+            } else {
+              console.log("No Wiki Info");
+              wiki = '<p>No Wikipedia Info Available</p>';
+            }
+            console.log(wikiInfo);
+            $.ajax({
+              url: flickrUrl,
+              dataType: 'jsonp',
+              jsonp: 'jsoncallback',
+            }).then(function(data, status, xhr) {
+              var image = "";
+              if(data.photos.photo[0]){
+                var photo = data.photos.photo[0];
+                image = '<img src="https://farm' + photo.farm +'.staticflickr.com/'+ photo.server +'/'+ photo.id+'_'+ photo.secret+'_t.jpg"</img>';
+              } else {
+                image = '<p>No Flickr Image Available</p>';
+              }
+              generateIWContent(image, marker, wiki);
+          });
           clearTimeout(self.apiTimeout);
-          $.ajax({
-            url: flickrUrl,
-            dataType: 'jsonp',
-            jsonp: 'jsoncallback',
-          }).then(function(data, status, xhr) {
-            var image = "";
-            if(data.photos.photo[0]){
-              var photo = data.photos.photo[0];
-              image = 'https://farm' + photo.farm +'.staticflickr.com/'+ photo.server +'/'+ photo.id+'_'+ photo.secret+'_t.jpg';
-            }
-            infowindow.setContent('<div class = "info-window"><p class = "iw-img"><img src="' + image + '"</img><h4>' + marker.title + '</h4><p>' + wikiInfo.summary + '</p><p><a href="' + wikiInfo.url + '">' + wikiInfo.url + '</a></p></p></div>');
-            infowindow.open(map, marker);
-            // Make sure the marker property is cleared if the infowindow is closed.
-            infowindow.addListener('closeclick',function(){
-              infowindow.marker = null;
-              map.setCenter(map.center);
-              map.fitBounds(bounds);
-            });
-
-            google.maps.event.addDomListener(map, 'click', function() {
-              infowindow.marker = null;
-              infowindow.close();
-              map.fitBounds(bounds);
-            });
-
-            if ((self.isOpen) && ($(window).width() < 550)){
-              console.log("hello");
-              map.panBy(0,-140);
-            }
-
-        },
-        function(xhr, status, error) {
-           console.log('failed (promises): ' + error);
         });
+      }
+      var generateIWContent = function(image, marker, wiki){
+        infowindow.setContent('<div class = "info-window"><p class = "iw-img">' + image + '<h4>' + marker.title + '</h4>' + wiki + '</p></div>');
+        infowindow.open(map, marker);
+        // Make sure the marker property is cleared if the infowindow is closed.
+        infowindow.addListener('closeclick',function(){
+          infowindow.marker = null;
+          map.setCenter(map.center);
+          map.fitBounds(bounds);
         });
+
+        google.maps.event.addDomListener(map, 'click', function() {
+          infowindow.marker = null;
+          infowindow.close();
+          map.fitBounds(bounds);
+        });
+
+        if ((self.isOpen) && ($(window).width() < 550)){
+          console.log("hello");
+          map.panBy(0,-140);
+        }
       }
     };
 
