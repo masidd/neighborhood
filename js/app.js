@@ -11,7 +11,7 @@
     function initMap() {
       map = new google.maps.Map(document.getElementById('map'), {
         center: {lat: 40.768433, lng: -73.525125},
-        zoom: 9
+        maxZoom: 10
       });
 
       largeInfowindow = new google.maps.InfoWindow();
@@ -144,6 +144,7 @@
               infowindow.close();
               map.fitBounds(bounds);
             });
+
             if ((self.isOpen) && ($(window).width() < 550)){
               console.log("hello");
               map.panBy(0,-140);
