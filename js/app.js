@@ -45,7 +45,6 @@ var ViewModel = function() {
     this.toggle = function() {
         this.isOpen(!this.isOpen());
     };
-
     //close list window
     this.close = function() {
         this.isOpen(false);
@@ -54,13 +53,21 @@ var ViewModel = function() {
     this.highlightIcon = function(){
       this.marker.setIcon(highlightedIcon);
     }
+
     this.resetIcon = function(){
-      this.marker.setIcon(defaultIcon);
+      if (!this.marker.clicked){
+        this.marker.setIcon(defaultIcon);
+      }
     }
 
     //set clicked marker as the current marker
     this.currentMarker = function() {
+      for (i = 0; i < self.locations().length; i++){
+        self.locations()[i].marker.clicked = false;
+        google.maps.event.trigger(self.locations()[i].marker, 'mouseout');
+      }
       this.marker.setIcon(highlightedIcon);
+      console.log(this.marker.clicked);
       this.marker.clicked = true;
       self.populateInfoWindow(this.marker, largeInfowindow);
     }
@@ -81,7 +88,7 @@ var ViewModel = function() {
         },
         county: 'Suffolk',
         marker: null,
-        visible: true
+        visible: ko.observable(true)
     }, {
         title: 'Theodore Roosevelt Nature Center at Jones Beach State Park, Jones Beach State Parks, Hempstead, NY 11793',
         location: {
@@ -90,7 +97,7 @@ var ViewModel = function() {
         },
         county: 'Nassau',
         marker: null,
-        visible: true
+        visible: ko.observable(true)
     }, {
         title: 'WaterFront Center, 1 West End Ave, Oyster Bay, NY 11771',
         location: {
@@ -99,7 +106,7 @@ var ViewModel = function() {
         },
         county: 'Nassau',
         marker: null,
-        visible: true
+        visible: ko.observable(true)
     }, {
         title: 'Wertheim National Wildlife Refuge, 340 Smith Rd, Shirley, NY 11967',
         location: {
@@ -108,7 +115,7 @@ var ViewModel = function() {
         },
         county: 'Suffolk',
         marker: null,
-        visible: true
+        visible: ko.observable(true)
     }, {
         title: 'Sands Point Preserve, 127 Middle Neck Rd, Sands Point, NY 11050',
         location: {
@@ -117,7 +124,7 @@ var ViewModel = function() {
         },
         county: 'Nassau',
         marker: null,
-        visible: true
+        visible: ko.observable(true)
     }, {
         title: 'Massapequa Preserve, N. Richmond Ave, North Massapequa, NY 11758',
         location: {
@@ -126,11 +133,12 @@ var ViewModel = function() {
         },
         county: 'Nassau',
         marker: null,
-        visible: true
+        visible: ko.observable(true)
     }]);
 
     //populate info window with location info retrieved from Flickr and Wikipedia APIs
     self.populateInfoWindow = function(marker, infowindow) {
+
         map.fitBounds(bounds);
         // Check to make sure the infowindow is not already opened on this marker.
         if (infowindow.marker != marker) {
@@ -209,29 +217,34 @@ var ViewModel = function() {
         }
     };
 
-    //continuously check if filters have been changed
+    //if nassau filter is changed, this subscription will change the toggle the visibility property accordingly
     this.nassau.subscribe(function() {
-        for (var i = 0; i < self.locations().length; i++) {
-          self.locations()[i].marker.setVisible(checkFilter(self.locations()[i], self.nassau(), "Nassau"));
-        }
+      for (var i = 0; i < self.locations().length; i++) {
+        var visibleToggle = checkFilter(self.locations()[i], self.nassau(), "Nassau");
+        self.locations()[i].marker.setVisible(visibleToggle);
+        self.locations()[i].visible(visibleToggle);
+      }
     });
 
+    //if suffolk filter is changed, this subscription will change the toggle the visibility property accordingly
     this.suffolk.subscribe(function() {
         for (var i = 0; i < self.locations().length; i++) {
-          self.locations()[i].marker.setVisible(checkFilter(self.locations()[i], self.suffolk(), "Suffolk"));
+          var visibleToggle = checkFilter(self.locations()[i], self.suffolk(), "Suffolk");
+          self.locations()[i].marker.setVisible(visibleToggle);
+          self.locations()[i].visible(visibleToggle);
         }
     });
 
+    //returns true or false based on filter
     var checkFilter = function(loc, toggledCounty, filter){
           var cnty = loc.county;
-          if (toggledCounty){
-            if (cnty == filter){
+          var currentStatus = loc.visible();
+          if (toggledCounty && cnty == filter){
               return true;
-            }
-          } else if (cnty == filter){
+          } else if (!toggledCounty && cnty == filter){
             return false;
-          }
-        }
+          } else return currentStatus;
+    }
 
     self.createMarkers = function() {
         for (var i = 0; i < self.locations().length; i++) {
@@ -257,10 +270,9 @@ var ViewModel = function() {
             });
 
             marker.addListener('mouseover', function() {
-                 this.setIcon(highlightedIcon);
+                this.setIcon(highlightedIcon);
             });
             marker.addListener('mouseout', function() {
-              console.log(this.clicked);
               if (!this.clicked){
                 this.setIcon(defaultIcon);
               }
