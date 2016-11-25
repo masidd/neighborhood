@@ -29,11 +29,13 @@
           <input data-bind="checked: nassau" id="filters" type="checkbox">Nassau County</input>
         </div>
         <nav>
-          <ul class="location-list" data-bind="foreach: filteredLocations">
-            <li data-bind="text: title.split(',')[0], click:$parent.currentMarker"></li>
+          <ul class="location-list" data-bind="foreach: locations">
+          <!--ko if: $parent.visible = true -->
+            <li data-bind="text: title.split(',')[0], click:$parent.currentMarker, event:{ mouseover:$parent.highlightIcon, mouseout:$parent.resetIcon}"></li>
             <li style="list-style: none; display: inline">
               <hr>
             </li>
+            <!-- /ko -->
           </ul>
         </nav>
       </div>

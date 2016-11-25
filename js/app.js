@@ -32,11 +32,11 @@ function initMap() {
 
     // Maps api asynchronous load code here.
 
-    ko.applyBindings(new vm());
+    ko.applyBindings(new ViewModel());
 
 }
 
-var vm = function() {
+var ViewModel = function() {
     var self = this;
 
     this.isOpen = ko.observable(false);
@@ -51,10 +51,17 @@ var vm = function() {
         this.isOpen(false);
         return true;
     };
+    this.highlightIcon = function(){
+      this.marker.setIcon(highlightedIcon);
+    }
+    this.resetIcon = function(){
+      this.marker.setIcon(defaultIcon);
+    }
 
     //set clicked marker as the current marker
     this.currentMarker = function() {
-        self.populateInfoWindow(this.marker, largeInfowindow);
+      this.marker.setIcon(highlightedIcon);
+      self.populateInfoWindow(this.marker, largeInfowindow);
     }
 
     //toggles the filter options
@@ -72,7 +79,8 @@ var vm = function() {
             lng: -73.230747
         },
         county: 'Suffolk',
-        marker: null
+        marker: null,
+        visible: true
     }, {
         title: 'Theodore Roosevelt Nature Center at Jones Beach State Park, Jones Beach State Parks, Hempstead, NY 11793',
         location: {
@@ -80,7 +88,8 @@ var vm = function() {
             lng: -73.546417
         },
         county: 'Nassau',
-        marker: null
+        marker: null,
+        visible: true
     }, {
         title: 'WaterFront Center, 1 West End Ave, Oyster Bay, NY 11771',
         location: {
@@ -88,7 +97,8 @@ var vm = function() {
             lng: -73.539744
         },
         county: 'Nassau',
-        marker: null
+        marker: null,
+        visible: true
     }, {
         title: 'Wertheim National Wildlife Refuge, 340 Smith Rd, Shirley, NY 11967',
         location: {
@@ -96,7 +106,8 @@ var vm = function() {
             lng: -72.8929
         },
         county: 'Suffolk',
-        marker: null
+        marker: null,
+        visible: true
     }, {
         title: 'Sands Point Preserve, 127 Middle Neck Rd, Sands Point, NY 11050',
         location: {
@@ -104,7 +115,8 @@ var vm = function() {
             lng: -73.70053
         },
         county: 'Nassau',
-        marker: null
+        marker: null,
+        visible: true
     }, {
         title: 'Massapequa Preserve, N. Richmond Ave, North Massapequa, NY 11758',
         location: {
@@ -112,38 +124,9 @@ var vm = function() {
             lng: -73.456573
         },
         county: 'Nassau',
-        marker: null
+        marker: null,
+        visible: true
     }]);
-
-    //modified code from article http://www.knockmeout.net/2011/04/utility-functions-in-knockoutjs.html
-    //parse through the locations array and create a filtered array based on chosen filters
-    this.filteredLocations = ko.computed(function() {
-        var filter;
-        var filteredArray = [];
-        if (this.nassau() && this.suffolk()) {
-            filteredArray = this.locations();
-        } else if (!this.nassau() && !this.suffolk()) {
-            filteredArray = [];
-        } else if (!this.nassau() || !this.suffolk()) {
-            if (this.nassau()) {
-                filter = 'nassau';
-            } else if (this.suffolk()) {
-                filter = 'suffolk';
-            }
-            filteredArray = ko.utils.arrayFilter(this.locations(), function(loc) {
-                return stringStartsWith(loc.county.toLowerCase(), filter);
-            });
-        }
-        return filteredArray;
-    }, this);
-
-    //return only those locations whose 'county' matches with the chosen filters
-    var stringStartsWith = function(string, startsWith) {
-        string = string || "";
-        if (startsWith.length > string.length)
-            return false;
-        return string.substring(0, startsWith.length) === startsWith;
-    };
 
     //populate info window with location info retrieved from Flickr and Wikipedia APIs
     self.populateInfoWindow = function(marker, infowindow) {
@@ -215,23 +198,52 @@ var vm = function() {
             if ((self.isOpen) && ($(window).width() < 550)) {
                 map.panBy(0, -140);
             }
+            if ((self.isOpen) && ($(window).width() > 550)) {
+                map.panBy(-200, 0);
+            }
         }
     };
 
     //continuously check if filters have been changed
-    this.filteredLocations.subscribe(function() {
-        for (var i = 0; i < markers.length; i++) {
-            markers[i].setMap(null);
+    this.nassau.subscribe(function() {
+        for (var i = 0; i < self.locations().length; i++) {
+          var cnty = self.locations()[i].county;
+          var visible = self.locations()[i].visible;
+          if (self.nassau()){
+            if (cnty == 'Nassau'){
+              visible = true;
+              self.locations()[i].marker.setVisible(true);
+            }
+          } else if (cnty == 'Nassau'){
+            visible = false;
+            self.locations()[i].marker.setVisible(false);
+          }
+          self.locations()[i].visible = visible;
         }
-        self.createMarkers();
     });
 
-    //create makers of off filtered locations
+    this.suffolk.subscribe(function() {
+        for (var i = 0; i < self.locations().length; i++) {
+          var cnty = self.locations()[i].county;
+          var visible = self.locations()[i].visible;
+          if (self.suffolk()){
+            if (cnty == 'Suffolk'){
+              visible = true;
+              self.locations()[i].marker.setVisible(true);
+            }
+          } else if (cnty == 'Suffolk'){
+            visible = false;
+            self.locations()[i].marker.setVisible(false);
+          }
+          self.locations()[i].visible = visible;
+        }
+    });
+
     self.createMarkers = function() {
-        for (var i = 0; i < self.filteredLocations().length; i++) {
+        for (var i = 0; i < self.locations().length; i++) {
             // Get the position from the location array.
-            var position = self.filteredLocations()[i].location;
-            var title = self.filteredLocations()[i].title;
+            var position = self.locations()[i].location;
+            var title = self.locations()[i].title;
             // Create a marker per location, and put into markers array.
             marker = new google.maps.Marker({
                 map: map,
@@ -239,17 +251,18 @@ var vm = function() {
                 title: title,
                 animation: google.maps.Animation.DROP,
                 icon: defaultIcon,
-                id: i
+                id: i,
+                clicked: false
             });
             markers.push(marker);
-            self.filteredLocations()[i].marker = marker;
+            self.locations()[i].marker = marker;
 
             marker.addListener('click', function() {
                 self.populateInfoWindow(this, largeInfowindow);
             });
 
             marker.addListener('mouseover', function() {
-                this.setIcon(highlightedIcon);
+                 this.setIcon(highlightedIcon);
             });
             marker.addListener('mouseout', function() {
                 this.setIcon(defaultIcon);
@@ -290,9 +303,6 @@ function makeMarkerIcon(image) {
         new google.maps.Size(21, 34));
     return markerImage;
 }
-
-//alert user if google map doesn't load
-window.gm_authFailure = function() {}
 
 function googleError() {
 
