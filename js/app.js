@@ -207,37 +207,26 @@ var ViewModel = function() {
     //continuously check if filters have been changed
     this.nassau.subscribe(function() {
         for (var i = 0; i < self.locations().length; i++) {
-          var cnty = self.locations()[i].county;
-          var visible = self.locations()[i].visible;
-          if (self.nassau()){
-            if (cnty == 'Nassau'){
-              visible = true;
-              self.locations()[i].marker.setVisible(true);
-            }
-          } else if (cnty == 'Nassau'){
-            visible = false;
-            self.locations()[i].marker.setVisible(false);
-          }
-          self.locations()[i].visible = visible;
+          self.locations()[i].marker.setVisible(checkFilter(self.locations()[i], self.nassau(), "Nassau"));
         }
     });
 
     this.suffolk.subscribe(function() {
         for (var i = 0; i < self.locations().length; i++) {
-          var cnty = self.locations()[i].county;
-          var visible = self.locations()[i].visible;
-          if (self.suffolk()){
-            if (cnty == 'Suffolk'){
-              visible = true;
-              self.locations()[i].marker.setVisible(true);
-            }
-          } else if (cnty == 'Suffolk'){
-            visible = false;
-            self.locations()[i].marker.setVisible(false);
-          }
-          self.locations()[i].visible = visible;
+          self.locations()[i].marker.setVisible(checkFilter(self.locations()[i], self.suffolk(), "Suffolk"));
         }
     });
+
+    var checkFilter = function(loc, toggledCounty, filter){
+          var cnty = loc.county;
+          if (toggledCounty){
+            if (cnty == filter){
+              return true;
+            }
+          } else if (cnty == filter){
+            return false;
+          }
+        }
 
     self.createMarkers = function() {
         for (var i = 0; i < self.locations().length; i++) {
@@ -306,5 +295,5 @@ function makeMarkerIcon(image) {
 
 function googleError() {
 
-    alert("Google Maps Not Loading, Please check internet Connection");
+    alert("Google Maps Not Loading, Please check internet connection");
 }
