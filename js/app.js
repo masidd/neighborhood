@@ -148,6 +148,8 @@ var ViewModel = function() {
             var flickrUrl = 'https://api.flickr.com/services/rest/?method=flickr.photos.search&sort=relevance&api_key=dc67acf839a879ed25b6a5fd29db7741&text=' + address.flickrSrcTxt + '&format=json&safe_search=1&per_page=20';
 
             //timeout function if API doesn't respond
+            infowindow.open(map, marker);
+
             self.apiTimeout = setTimeout(function() {
                 alert('ERROR: Failed to load data');
             }, 5000);
@@ -189,7 +191,6 @@ var ViewModel = function() {
 
         var generateIWContent = function(image, marker, wiki) {
             infowindow.setContent('<div class = "info-window"><p class = "iw-img">' + image + '<h4>' + marker.title + '</h4>' + wiki + '</p></div>');
-            infowindow.open(map, marker);
             // Make sure the marker property is cleared if the infowindow is closed.
             infowindow.addListener('closeclick', function() {
                 marker.setIcon(defaultIcon);
@@ -265,6 +266,11 @@ var ViewModel = function() {
             self.locations()[i].marker = marker;
 
             marker.addListener('click', function() {
+                for (i = 0; i < self.locations().length; i++){
+                  self.locations()[i].marker.clicked = false;
+                  google.maps.event.trigger(self.locations()[i].marker, 'mouseout');
+                }
+                this.setIcon(highlightedIcon);
                 self.populateInfoWindow(this, largeInfowindow);
                 this.clicked = true;
             });
