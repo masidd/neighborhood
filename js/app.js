@@ -61,6 +61,7 @@ var ViewModel = function() {
     //set clicked marker as the current marker
     this.currentMarker = function() {
       this.marker.setIcon(highlightedIcon);
+      this.marker.clicked = true;
       self.populateInfoWindow(this.marker, largeInfowindow);
     }
 
@@ -183,12 +184,16 @@ var ViewModel = function() {
             infowindow.open(map, marker);
             // Make sure the marker property is cleared if the infowindow is closed.
             infowindow.addListener('closeclick', function() {
+                marker.setIcon(defaultIcon);
+                marker.clicked = false;
                 infowindow.marker = null;
                 map.setCenter(map.center);
                 map.fitBounds(bounds);
             });
             //close infowindow if map is clicked
             google.maps.event.addDomListener(map, 'click', function() {
+                marker.setIcon(defaultIcon);
+                marker.clicked = false;
                 infowindow.marker = null;
                 infowindow.close();
                 map.fitBounds(bounds);
@@ -248,13 +253,17 @@ var ViewModel = function() {
 
             marker.addListener('click', function() {
                 self.populateInfoWindow(this, largeInfowindow);
+                this.clicked = true;
             });
 
             marker.addListener('mouseover', function() {
                  this.setIcon(highlightedIcon);
             });
             marker.addListener('mouseout', function() {
+              console.log(this.clicked);
+              if (!this.clicked){
                 this.setIcon(defaultIcon);
+              }
             });
 
             bounds.extend(marker.position);
